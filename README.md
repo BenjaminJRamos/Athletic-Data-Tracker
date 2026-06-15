@@ -1,1 +1,3 @@
 # Athletic-Data-Tracker
+
+An enterprise-grade, asynchronous data ingestion pipeline designed to process, deduplicate, and harmonize multi-source fitness telemetry data (such as mock Apple Watch and Strava API streams) into a single unified user profile. Built using a Java/Spring Boot core for high-throughput backend processing, the system uses a Python-based telemetry simulator to mimic live sensor data and PostgreSQL for relational, time-series storage. The platform features an algorithmic engine that resolves overlapping device timestamps, automatically classifies workout types, and generates comprehensive daily athletic volume metrics.

@@ -9,7 +9,7 @@ CREATE TABLE users (
 
 -- TABLE FOR ALL THE INCOMING ATHLETIC DATA
 CREATE TABLE raw_telemetry (
-    telemetry_id SERIAL PRIMARY KEY,
+    telemetry_id BIGSERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     device_source VARCHAR(30) NOT NULL, -- 'AppleWatch', 'Strava_API', 'Mock_Garmin'
     timestamp TIMESTAMP NOT NULL,

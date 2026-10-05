@@ -1,28 +1,24 @@
-# Stage 1: Build the Spring Boot JAR with Maven
-FROM eclipse-temurin:17-jdk-alpine AS build
+# Stage 1: Build the Spring Boot JAR with official Maven
+FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 
-# Copy Maven wrapper and configuration files
-COPY mvnw .
-COPY .mvn .mvn
+# Copy pom.xml and download dependencies to leverage Docker layer caching
 COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Copy application source code
+# Copy source code and build application JAR
 COPY src src
-
-# Fix Windows line endings and make script executable
-RUN sed -i 's/\r$//' mvnw
-RUN chmod +x mvnw
-
-# Package application
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Stage 2: Create lightweight production runtime image
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
+# Copy built JAR from Stage 1
 COPY --from=build /app/target/*.jar app.jar
 
+# Expose Spring Boot default port
 EXPOSE 8080
 
+# Launch application
 ENTRYPOINT ["java", "-jar", "app.jar"]

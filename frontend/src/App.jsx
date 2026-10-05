@@ -4,6 +4,9 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } f
 //import { Activity, ShieldCheck, RefreshCw } from 'lucide-react';
 import { Activity, ShieldCheck, RefreshCw, Flame, Zap, Moon, HeartPulse, Trash2, SlidersHorizontal, X } from 'lucide-react';
 
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://athletic-data-tracker.onrender.com';
+
 export default function App() {
   const [telemetryData, setTelemetryData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,8 @@ export default function App() {
 const fetchTelemetry = async () => {
   setLoading(true);
   try {
-    const response = await fetch(`http://localhost:8080/api/v1/telemetry/deduplicate/${selectedUserId}`);
+  //  const response = await fetch(`http://localhost:8080/api/v1/telemetry/deduplicate/${selectedUserId}`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/telemetry/deduplicate/${selectedUserId}`);
     const data = await response.json();
     
     // Explicitly sort chronologically before setting state
@@ -60,7 +64,8 @@ const fetchTelemetry = async () => {
     }
     setResetting(true);
     try {
-      await fetch(`http://localhost:8080/api/v1/telemetry/reset/${selectedUserId}`, {
+     // await fetch(`http://localhost:8080/api/v1/telemetry/reset/${selectedUserId}`, {
+      await fetch(`${API_BASE_URL}/api/v1/telemetry/reset/${selectedUserId}`, {
         method: 'DELETE',
       });
       await fetchTelemetry();
@@ -124,7 +129,8 @@ const fetchTelemetry = async () => {
       : parseInt(durationValue, 10);
 
     try {
-      const url = `http://localhost:8080/api/v1/telemetry/simulate/${selectedUserId}/custom?type=${activeType}&durationMinutes=${durationInMinutes}&generateHeartRate=${includeHR}`;
+    //  const url = `http://localhost:8080/api/v1/telemetry/simulate/${selectedUserId}/custom?type=${activeType}&durationMinutes=${durationInMinutes}&generateHeartRate=${includeHR}`;
+      const url = `${API_BASE_URL}/api/v1/telemetry/simulate/${selectedUserId}/custom?type=${activeType}&durationMinutes=${durationInMinutes}&generateHeartRate=${includeHR}`;
       await fetch(url, { method: 'POST' });
       await fetchTelemetry();
     } catch (error) {

@@ -3,6 +3,8 @@
 import random
 import json
 import time
+# just added to connect data creation script to backend
+import requests 
 from datetime import datetime, timedelta, timezone
 
 class WearableSimulator:
@@ -47,6 +49,7 @@ class WearableSimulator:
             self.current_hr = max(60.0, min(190.0, self.current_hr))  # if you are 30 years old your max estimated geart rate is 190 BPM. I believe the formula is 220 - age, but for this simulation I am going to just use 190 as a hard cap for realism. I might change this later. Also I will be using 60 BPM as the lowest as below this number can be an indication of bradycardia.
             final_hr = int(self.current_hr)
 
+            """
             # ─── DEVICE 1: APPLE WATCH PACKET ───
             # High-frequency telemetry with a raw payload structural detail
             apple_packet = {
@@ -79,6 +82,40 @@ class WearableSimulator:
                 }
                 telemetry_packets.append(strava_packet)
                 
+                """
+            # NEW V2:
+            # ─── DEVICE 1: APPLE WATCH PACKET ───
+            apple_packet = {
+                "userId": self.user_id,
+                "deviceSource": "AppleWatch",
+                "timestamp": iso_timestamp,
+                "heartRate": final_hr,
+                "activityTypeClaimed": "Functional Strength Training",
+                # Convert dict to JSON string if Java rawPayload is a String field:
+                "rawPayload": json.dumps({
+                    "accelerometer_z_axis": round(random.uniform(0.1, 1.8), 2),
+                    "battery_level_pct": 84
+                })
+            }
+            telemetry_packets.append(apple_packet)
+
+            # ─── DEVICE 2: STRAVA PACKET ───
+            if random.random() > 0.1:
+                strava_packet = {
+                    "userId": self.user_id,
+                    "deviceSource": "Strava_API",
+                    "timestamp": iso_timestamp,
+                    "heartRate": final_hr + random.randint(-1, 1),
+                    "activityTypeClaimed": "Weight Training",
+                    "rawPayload": json.dumps({
+                        "api_app_id": 48291,
+                        "elevation_gain_m": 0
+                    })
+                }
+                telemetry_packets.append(strava_packet)
+
+
+
         return telemetry_packets
     
 
@@ -93,3 +130,15 @@ if __name__ == "__main__": # This is for safety: it's to ensure that the code on
         json.dump(mock_data, f, indent=4)
         
     print(f"Success! Generated {len(mock_data)} data packets and saved to {output_filename}") # If this message prints, then the file was successfully created and you should see the JSON file.
+
+    # NEW
+    # 2. Transmit payload directly to Spring Boot REST endpoint
+    url = "http://localhost:8080/api/v1/telemetry/ingest"
+    headers = {"Content-Type": "application/json"}
+    
+    print("Transmitting data to Spring Boot backend...")
+    try:
+        response = requests.post(url, json=mock_data, headers=headers)
+        print(f"Spring Boot Response ({response.status_code}): {response.text}")
+    except Exception as e:
+        print(f"Error transmitting to Spring Boot: {e}")
